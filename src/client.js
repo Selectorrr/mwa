@@ -6,6 +6,8 @@ import MuiThemeProvider from '@material-ui/core/styles/MuiThemeProvider'
 import createMuiTheme from '@material-ui/core/styles/createMuiTheme'
 import purple from '@material-ui/core/colors/purple'
 import Loadable from 'react-loadable'
+import configureStore from './redux/configureStore'
+import {Provider} from 'react-redux'
 
 // Тема на клиенте должна быть такой же, как и на сервере
 // При желании можно даже вынести в отдельный модуль
@@ -21,14 +23,21 @@ const theme = createMuiTheme({
     },
 })
 
+// Буквально вытаскиваем initialState из "окна" и заново создаем стор
+const state = window.__STATE__
+const store = configureStore(state)
+
+
 // Оборачиваем приложение созданной темой
 Loadable.preloadReady().then(() => {
     hydrate(
-        <MuiThemeProvider theme={theme}>
-            <BrowserRouter>
-                <App/>
-            </BrowserRouter>
-        </MuiThemeProvider>,
+        <Provider store={store}>
+            <MuiThemeProvider theme={theme}>
+                <BrowserRouter>
+                    <App/>
+                </BrowserRouter>
+            </MuiThemeProvider>
+        </Provider>,
         document.querySelector('#app')
     )
 })

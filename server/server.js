@@ -12,8 +12,10 @@ import stats from '~/public/react-loadable.json'
 
 import App from '&/app/App'
 import template from './template'
+import {Provider} from 'react-redux'
+import configureStore from '&/redux/configureStore'
 
-export default function render(url) {
+export default function render(url, initialState) {
 
     const reactRouterContext = {}
 
@@ -33,19 +35,25 @@ export default function render(url) {
             useNextVariants: true,
         },
     })
+    // Создаем стор
+    const store = configureStore(initialState)
+
     const generateClassName = createGenerateClassName()
     let modules = []
     // Создаем обертку для приложения
 // Собираем отрендеренные модули в массив modules
+// Redux Provider снабжает все приложение стором.
     let content = renderToString(
         <StaticRouter location={url} context={reactRouterContext}>
-            <JssProvider registry={sheetsRegistry} generateClassName={generateClassName}>
-                <MuiThemeProvider theme={theme} sheetsManager={sheetsManager}>
-                    <Loadable.Capture report={moduleName => modules.push(moduleName)}>
-                        <App/>
-                    </Loadable.Capture>
-                </MuiThemeProvider>
-            </JssProvider>
+            <Provider store={store}>
+                <JssProvider registry={sheetsRegistry} generateClassName={generateClassName}>
+                    <MuiThemeProvider theme={theme} sheetsManager={sheetsManager}>
+                        <Loadable.Capture report={moduleName => modules.push(moduleName)}>
+                            <App/>
+                        </Loadable.Capture>
+                    </MuiThemeProvider>
+                </JssProvider>
+            </Provider>
         </StaticRouter>
     )
 
@@ -55,5 +63,5 @@ export default function render(url) {
     let bundles = getBundles(stats, modules)
     // И передаем в HTML-шаблон
     // Передаем sheetsRegistry в шаблон для дальнейшего внедрения в серверный html
-    return template(helmet, content, sheetsRegistry, bundles)
+    return template(helmet, content, sheetsRegistry, bundles, initialState)
 }

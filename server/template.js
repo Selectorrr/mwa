@@ -1,7 +1,11 @@
-export default function template(helmet, content = '', sheetsRegistry, bundles) {
+export default function template(helmet, content = '', sheetsRegistry, bundles, initialState = {}) {
 
     const css = sheetsRegistry.toString()
-    const scripts = `<script src="/client.js"></script>`
+// Делаем из initialState строку и передаем как глобальную переменную
+    const scripts = `<script>
+                   window.__STATE__ = ${JSON.stringify(initialState)}
+                   </script>
+                   <script src="/client.js"></script>`
 
     const page = `<!DOCTYPE html>
               <html lang="en">
