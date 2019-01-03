@@ -1,4 +1,4 @@
-export default function template(helmet, content = '', sheetsRegistry) {
+export default function template(helmet, content = '', sheetsRegistry, bundles) {
 
     const css = sheetsRegistry.toString()
     const scripts = `<script src="/client.js"></script>`
@@ -16,11 +16,12 @@ export default function template(helmet, content = '', sheetsRegistry) {
                 <link rel="icon" href="/assets/logos/favicon.ico" type="image/x-icon">
                 <link rel="stylesheet" href="/assets/global.css">
               </head>
-              <body>
+             <body>
                 <div class="content">
                    <div id="app" class="wrap-inner">
                       <!--- magic happens here -->  ${content}
                    </div>
+                   ${bundles.map(bundle => `<script src='/${bundle.file}'></script>`).join('\n')}
                 </div>
                 <style id="jss-server-side">${css}</style>
                 ${scripts}

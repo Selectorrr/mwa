@@ -6,6 +6,9 @@ import {Helmet} from 'react-helmet'
 import {JssProvider, SheetsRegistry} from 'react-jss'
 import {createGenerateClassName, createMuiTheme, MuiThemeProvider,} from '@material-ui/core/styles'
 import purple from '@material-ui/core/colors/purple'
+import Loadable from 'react-loadable'
+import {getBundles} from 'react-loadable/webpack'
+import stats from '~/public/react-loadable.json'
 
 import App from '&/app/App'
 import template from './template'
@@ -31,13 +34,16 @@ export default function render(url) {
         },
     })
     const generateClassName = createGenerateClassName()
-
+    let modules = []
     // Создаем обертку для приложения
+// Собираем отрендеренные модули в массив modules
     let content = renderToString(
         <StaticRouter location={url} context={reactRouterContext}>
             <JssProvider registry={sheetsRegistry} generateClassName={generateClassName}>
                 <MuiThemeProvider theme={theme} sheetsManager={sheetsManager}>
-                    <App/>
+                    <Loadable.Capture report={moduleName => modules.push(moduleName)}>
+                        <App/>
+                    </Loadable.Capture>
                 </MuiThemeProvider>
             </JssProvider>
         </StaticRouter>
@@ -45,6 +51,9 @@ export default function render(url) {
 
     const helmet = Helmet.renderStatic()
 
+    // Превращаем модули в бандлы (рассказано дальше)
+    let bundles = getBundles(stats, modules)
+    // И передаем в HTML-шаблон
     // Передаем sheetsRegistry в шаблон для дальнейшего внедрения в серверный html
-    return template(helmet, content, sheetsRegistry)
+    return template(helmet, content, sheetsRegistry, bundles)
 }
