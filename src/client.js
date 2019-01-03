@@ -8,6 +8,7 @@ import purple from '@material-ui/core/colors/purple'
 import Loadable from 'react-loadable'
 import configureStore from './redux/configureStore'
 import {Provider} from 'react-redux'
+import MobileApp from "./mobileApp/App";
 
 // Тема на клиенте должна быть такой же, как и на сервере
 // При желании можно даже вынести в отдельный модуль
@@ -34,7 +35,7 @@ Loadable.preloadReady().then(() => {
         <Provider store={store}>
             <MuiThemeProvider theme={theme}>
                 <BrowserRouter>
-                    <App/>
+                    {state.mobile === null ? <App/> : <MobileApp/>}
                 </BrowserRouter>
             </MuiThemeProvider>
         </Provider>,

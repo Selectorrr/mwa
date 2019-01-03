@@ -14,8 +14,9 @@ import App from '&/app/App'
 import template from './template'
 import {Provider} from 'react-redux'
 import configureStore from '&/redux/configureStore'
+import MobileApp from '&/mobileApp/App'
 
-export default function render(url, initialState) {
+export default function render(url, initialState, mobile) {
 
     const reactRouterContext = {}
 
@@ -49,7 +50,7 @@ export default function render(url, initialState) {
                 <JssProvider registry={sheetsRegistry} generateClassName={generateClassName}>
                     <MuiThemeProvider theme={theme} sheetsManager={sheetsManager}>
                         <Loadable.Capture report={moduleName => modules.push(moduleName)}>
-                            <App/>
+                            {mobile === null ? <App/> : <MobileApp/>}
                         </Loadable.Capture>
                     </MuiThemeProvider>
                 </JssProvider>
@@ -58,6 +59,8 @@ export default function render(url, initialState) {
     )
 
     const helmet = Helmet.renderStatic()
+    // Передаем клиенту информацию об устройстве пользователя
+    initialState.mobile = mobile
 
     // Превращаем модули в бандлы (рассказано дальше)
     let bundles = getBundles(stats, modules)
