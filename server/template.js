@@ -1,5 +1,6 @@
-// HTML-шаблон
-export default function template(helmet, content = '') {
+export default function template(helmet, content = '', sheetsRegistry) {
+
+    const css = sheetsRegistry.toString()
     const scripts = `<script src="/client.js"></script>`
 
     const page = `<!DOCTYPE html>
@@ -21,6 +22,7 @@ export default function template(helmet, content = '') {
                       <!--- magic happens here -->  ${content}
                    </div>
                 </div>
+                <style id="jss-server-side">${css}</style>
                 ${scripts}
               </body>
               `
