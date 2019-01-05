@@ -76,7 +76,7 @@ export default function render(url, initialState, mobile) {
     } else if (url.toString().startsWith("/news")) {
 
         let states = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 20; i++) {
             states.push({id: v4(), title: 'Title ' + v4()})
         }
         return states.map(state => {

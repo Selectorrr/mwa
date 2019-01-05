@@ -12,6 +12,7 @@ import {withStyles} from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import NewsItem from "./NewsItem";
 import InfiniteScroll from 'react-infinite-scroller';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const styles = theme => ({
     root: {
@@ -21,7 +22,7 @@ const styles = theme => ({
         padding: theme.spacing.unit * 2,
         textAlign: 'center',
         color: theme.palette.text.secondary,
-    },
+    }
 });
 
 class Home extends React.Component {
@@ -76,23 +77,22 @@ class Home extends React.Component {
                 </Helmet>
                 <Header/>
                 <div className={classes.root} style={{marginTop: "20px"}}>
-                    <InfiniteScroll
-                        pageStart={0}
-                        loadMore={this.loadNews}
-                        hasMore={true}
-                        loader={<div className="loader" key={0}>Loading ...</div>}
+                    <Grid
+                        container
+                        direction="column"
+                        justify="center"
+                        alignItems="center"
                     >
-                        <Grid
-                            container
-                            direction="column"
-                            justify="center"
-                            alignItems="center"
-                        >
+                        <InfiniteScroll
+                            pageStart={0}
+                            loadMore={this.loadNews}
+                            hasMore={true}
+                            loader={<Grid key="news-progressbar" item xs={12} style={{marginTop:"20px"}}><LinearProgress /></Grid>}>
                             {news.map((i) => {
                                 return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
                             })}
-                        </Grid>
-                    </InfiniteScroll>
+                        </InfiniteScroll>
+                    </Grid>
                 </div>
             </div>
         )
