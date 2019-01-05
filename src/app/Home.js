@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 import {withStyles} from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import NewsItem from "./NewsItem";
+import InfiniteScroll from 'react-infinite-scroller';
 
 const styles = theme => ({
     root: {
@@ -28,6 +29,7 @@ class Home extends React.Component {
         super()
         this.increase = this.increase.bind(this)
         this.decrease = this.decrease.bind(this)
+        this.loadNews = this.loadNews.bind(this)
         this.state = {
             news: []
         }
@@ -52,7 +54,8 @@ class Home extends React.Component {
                     return {...prevState, news: [...prevState.news, ...newsItems]}
                 }, () => {
                     newsItems.forEach((item) => {
-                        hydrate(<NewsItem {...item.state}/>, document.getElementById(item.state.id).parentNode.parentNode)
+                        hydrate(
+                            <NewsItem {...item.state}/>, document.getElementById(item.state.id).parentNode.parentNode)
                     })
                 })
             });
@@ -73,26 +76,23 @@ class Home extends React.Component {
                 </Helmet>
                 <Header/>
                 <div className={classes.root} style={{marginTop: "20px"}}>
-                    <Grid
-                        container
-                        direction="column"
-                        justify="center"
-                        alignItems="center"
+                    <InfiniteScroll
+                        pageStart={0}
+                        loadMore={this.loadNews}
+                        hasMore={true}
+                        loader={<div className="loader" key={0}>Loading ...</div>}
                     >
-                        {news.map((i) => {
-                            return <div key={i.state.id  + "2"} dangerouslySetInnerHTML={{__html: i.markup}}/>
-                        })}
-                    </Grid>
-                    {/*<Grid*/}
-                        {/*container*/}
-                        {/*direction="column"*/}
-                        {/*justify="center"*/}
-                        {/*alignItems="center"*/}
-                    {/*>*/}
-                        {/*{news.map((i, index) => {*/}
-                            {/*return <NewsItem key={i.state.id + "1"}  id={"test"} title={"test"}/>*/}
-                        {/*})}*/}
-                    {/*</Grid>*/}
+                        <Grid
+                            container
+                            direction="column"
+                            justify="center"
+                            alignItems="center"
+                        >
+                            {news.map((i) => {
+                                return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
+                            })}
+                        </Grid>
+                    </InfiniteScroll>
                 </div>
             </div>
         )

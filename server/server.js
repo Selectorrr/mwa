@@ -73,14 +73,13 @@ function renderIndex(initialState, url, mobile) {
 export default function render(url, initialState, mobile) {
     if ("/" === url) {
         return renderIndex(initialState, url, mobile);
-    } else if ("/news" === url) {
+    } else if (url.toString().startsWith("/news")) {
 
         let states = [
-            {id: v4(), title: 'test1'},
-            {id: v4(), title: 'test2'},
-            {id: v4(), title: 'test3'},
-            {id: v4(), title: 'test4'},
         ];
+        for (let i = 0; i < 100; i++) {
+            states.push({id: v4(), title: 'Title ' + v4()})
+        }
         return states.map(state => {
             return {
                 state: state,
