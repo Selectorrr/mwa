@@ -3,29 +3,36 @@ import {Helmet} from 'react-helmet'
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 import * as Actions from '&/redux/actions'
+import {hydrate} from 'react-dom'
 
 import Header from './Header'
-import Paper from '@material-ui/core/Paper'
-import Typography from '@material-ui/core/Typography'
-import Button from '@material-ui/core/Button'
 
-const styles = {
-    paper: {
-        margin: 'auto',
-        marginTop: '10%',
-        width: '40%',
-        padding: 15
+import PropTypes from 'prop-types';
+import {withStyles} from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import NewsItem from "./NewsItem";
+import InfiniteScroll from 'react-infinite-scroller';
+
+const styles = theme => ({
+    root: {
+        flexGrow: 1,
     },
-    btn: {
-        marginRight: 20
-    }
-}
+    paper: {
+        padding: theme.spacing.unit * 2,
+        textAlign: 'center',
+        color: theme.palette.text.secondary,
+    },
+});
 
 class Home extends React.Component {
     constructor() {
         super()
         this.increase = this.increase.bind(this)
         this.decrease = this.decrease.bind(this)
+        this.loadNews = this.loadNews.bind(this)
+        this.state = {
+            news: []
+        }
     }
 
     // Функции вызывают dispatch на действия increase или decrease
@@ -37,24 +44,59 @@ class Home extends React.Component {
         this.props.actions.decrease()
     }
 
+    loadNews() {
+        fetch(`/news`)
+            .then((response) => {
+                return response.json()
+            })
+            .then((newsItems) => {
+                this.setState((prevState) => {
+                    return {...prevState, news: [...prevState.news, ...newsItems]}
+                }, () => {
+                    newsItems.forEach((item) => {
+                        hydrate(
+                            <NewsItem {...item.state}/>, document.getElementById(item.state.id).parentNode.parentNode)
+                    })
+                })
+            });
+    }
+
+    componentDidMount() {
+        this.loadNews()
+    }
+
     render() {
-    return (
-        <div>
-            <Helmet>
-                <title>MWA - Home</title>
-                <meta name="description" content="Modern Web App - Home Page"/>
-            </Helmet>
-            <Header/>
-            <Paper elevation={4} style={styles.paper} align="center">
-                <Typography variant="h5">Redux-Counter</Typography>
-                <Typography variant="subtitle1">Counter: {this.props.count}</Typography>
-                <br/>
-                <Button variant="contained" color="primary" onClick={this.increase} style={styles.btn}>Increase</Button>
-                <Button variant="contained" color="primary" onClick={this.decrease}>Decrease</Button>
-            </Paper>
-        </div>
-    )
-}
+        const {news} = this.state;
+        const {classes} = this.props;
+        return (
+            <div>
+                <Helmet>
+                    <title>MWA - Home</title>
+                    <meta name="description" content="Modern Web App - Home Page"/>
+                </Helmet>
+                <Header/>
+                <div className={classes.root} style={{marginTop: "20px"}}>
+                    <InfiniteScroll
+                        pageStart={0}
+                        loadMore={this.loadNews}
+                        hasMore={true}
+                        loader={<div className="loader" key={0}>Loading ...</div>}
+                    >
+                        <Grid
+                            container
+                            direction="column"
+                            justify="center"
+                            alignItems="center"
+                        >
+                            {news.map((i) => {
+                                return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
+                            })}
+                        </Grid>
+                    </InfiniteScroll>
+                </div>
+            </div>
+        )
+    }
 }
 
 // Добавляем в props счетчик
@@ -66,8 +108,12 @@ const mapDispatchToProps = (dispatch) => ({
     actions: bindActionCreators(Actions, dispatch)
 })
 
+Home.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+
 // Используем react-redux connect для подключения к стору
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(Home)
+)(withStyles(styles)(Home))
