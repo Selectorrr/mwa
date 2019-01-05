@@ -75,15 +75,20 @@ export default function render(url, initialState, mobile) {
         return renderIndex(initialState, url, mobile);
     } else if (url.toString().startsWith("/news")) {
 
-        let states = [
-        ];
+        let states = [];
         for (let i = 0; i < 100; i++) {
             states.push({id: v4(), title: 'Title ' + v4()})
         }
         return states.map(state => {
             return {
                 state: state,
-                markup: renderToString(<NewsItem {...state}/>)
+                markup: renderToString(
+                    <JssProvider registry={sheetsRegistry} generateClassName={generateClassName}>
+                        <MuiThemeProvider theme={theme} sheetsManager={sheetsManager}>
+                            <NewsItem {...state}/>
+                        </MuiThemeProvider>
+                    </JssProvider>
+                )
             }
         });
     }

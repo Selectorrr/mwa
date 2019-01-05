@@ -8,6 +8,11 @@ import Header from './Header'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
+import NewsItem from "../app/NewsItem";
+import {hydrate} from 'react-dom'
+import {withStyles} from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import InfiniteScroll from 'react-infinite-scroller';
 
 const styles = {
     paper: {
@@ -26,6 +31,10 @@ class Home extends React.Component {
         super()
         this.increase = this.increase.bind(this)
         this.decrease = this.decrease.bind(this)
+        this.loadNews = this.loadNews.bind(this)
+        this.state = {
+            news: []
+        }
     }
 
     increase() {
@@ -36,7 +45,27 @@ class Home extends React.Component {
         this.props.actions.decrease()
     }
 
+
+    loadNews() {
+        fetch(`/news`)
+            .then((response) => {
+                return response.json()
+            })
+            .then((newsItems) => {
+                this.setState((prevState) => {
+                    return {...prevState, news: [...prevState.news, ...newsItems]}
+                }, () => {
+                    newsItems.forEach((item) => {
+                        hydrate(
+                            <NewsItem {...item.state}/>, document.getElementById(item.state.id).parentNode.parentNode)
+                    })
+                })
+            });
+    }
+
     render() {
+        const {news} = this.state;
+        const {classes} = this.props;
         return (
             <div>
                 <Header/>
@@ -52,6 +81,26 @@ class Home extends React.Component {
                             style={styles.btnLeft}>Increase</Button>
                     <Button variant="contained" color="primary" onClick={this.decrease}>Decrease</Button>
                 </Paper>
+
+                <div className={classes.root} style={{marginTop: "20px"}}>
+                    <InfiniteScroll
+                        pageStart={0}
+                        loadMore={this.loadNews}
+                        hasMore={true}
+                        loader={<div className="loader" key={0}>Loading ...</div>}
+                    >
+                        <Grid
+                            container
+                            direction="column"
+                            justify="center"
+                            alignItems="center"
+                        >
+                            {news.map((i) => {
+                                return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
+                            })}
+                        </Grid>
+                    </InfiniteScroll>
+                </div>
             </div>
         )
     }
@@ -67,4 +116,4 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(Home)
+)(withStyles(styles)(Home))
