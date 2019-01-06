@@ -3,27 +3,28 @@ import {Helmet} from 'react-helmet'
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 import * as Actions from '&/redux/actions'
-import {hydrate} from 'react-dom'
 
 import Header from './Header'
-
-import PropTypes from 'prop-types';
+import Paper from '@material-ui/core/Paper'
+import Typography from '@material-ui/core/Typography'
+import Button from '@material-ui/core/Button'
+import NewsItem from "../app/NewsItem";
+import {hydrate} from 'react-dom'
 import {withStyles} from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import NewsItem from "./NewsItem";
 import InfiniteScroll from 'react-infinite-scroller';
-import LinearProgress from '@material-ui/core/LinearProgress';
 
-const styles = theme => ({
-    root: {
-        flexGrow: 1,
-    },
+const styles = {
     paper: {
-        padding: theme.spacing.unit * 2,
-        textAlign: 'center',
-        color: theme.palette.text.secondary,
+        margin: "auto",
+        marginTop: 20,
+        width: "90%",
+        padding: 15
+    },
+    btnLeft: {
+        marginRight: 20
     }
-});
+}
 
 class Home extends React.Component {
     constructor() {
@@ -36,7 +37,6 @@ class Home extends React.Component {
         }
     }
 
-    // Функции вызывают dispatch на действия increase или decrease
     increase() {
         this.props.actions.increase()
     }
@@ -44,6 +44,7 @@ class Home extends React.Component {
     decrease() {
         this.props.actions.decrease()
     }
+
 
     loadNews() {
         fetch(`/news`)
@@ -62,57 +63,56 @@ class Home extends React.Component {
             });
     }
 
-    componentDidMount() {
-        this.loadNews()
-    }
-
     render() {
         const {news} = this.state;
         const {classes} = this.props;
         return (
             <div>
-                <Helmet>
-                    <title>MWA - Home</title>
-                    <meta name="description" content="Modern Web App - Home Page"/>
-                </Helmet>
                 <Header/>
+                <Helmet>
+                    <title>VaMax Mobile</title>
+                    <meta name="description" content="VaMax Mobile App"/>
+                </Helmet>
+                <Paper elevation={4} style={styles.paper} align="center">
+                    <Typography variant="h5">Redux-Counter</Typography>
+                    <Typography variant="subtitle1">Counter: {this.props.count}</Typography>
+                    <br/>
+                    <Button variant="contained" color="primary" onClick={this.increase}
+                            style={styles.btnLeft}>Increase</Button>
+                    <Button variant="contained" color="primary" onClick={this.decrease}>Decrease</Button>
+                </Paper>
+
                 <div className={classes.root} style={{marginTop: "20px"}}>
-                    <Grid
-                        container
-                        direction="column"
-                        justify="center"
-                        alignItems="center"
+                    <InfiniteScroll
+                        pageStart={0}
+                        loadMore={this.loadNews}
+                        hasMore={true}
+                        loader={<div className="loader" key={0}>Loading ...</div>}
                     >
-                        <InfiniteScroll
-                            pageStart={0}
-                            loadMore={this.loadNews}
-                            hasMore={true}
-                            loader={<Grid key="news-progressbar" item xs={12} style={{marginTop:"20px"}}><LinearProgress /></Grid>}>
+                        <Grid
+                            container
+                            direction="column"
+                            justify="center"
+                            alignItems="center"
+                        >
                             {news.map((i) => {
                                 return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
                             })}
-                        </InfiniteScroll>
-                    </Grid>
+                        </Grid>
+                    </InfiniteScroll>
                 </div>
             </div>
         )
     }
 }
 
-// Добавляем в props счетчик
 const mapStateToProps = (state) => ({
     count: state.count
 })
-// Добавляем actions к this.props
 const mapDispatchToProps = (dispatch) => ({
     actions: bindActionCreators(Actions, dispatch)
 })
 
-Home.propTypes = {
-    classes: PropTypes.object.isRequired,
-};
-
-// Используем react-redux connect для подключения к стору
 export default connect(
     mapStateToProps,
     mapDispatchToProps

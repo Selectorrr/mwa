@@ -11,6 +11,8 @@
     "@babel/preset-react"
   ],
   "plugins": [
+    "@babel/plugin-syntax-dynamic-import",
+    "react-loadable/babel",
     [
       "babel-plugin-root-import",
       {
