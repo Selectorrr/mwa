@@ -10,9 +10,12 @@ import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import NewsItem from "../app/NewsItem";
 import {hydrate} from 'react-dom'
-import {withStyles} from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
 import InfiniteScroll from 'react-infinite-scroller';
+import ThemeProvider from '@material-ui/styles/ThemeProvider'
+import StylesProvider from '@material-ui/styles/StylesProvider'
+import createThemeContext from "~/themeContext";
 
 const styles = {
     paper: {
@@ -25,6 +28,8 @@ const styles = {
         marginRight: 20
     }
 }
+
+const {theme, generateClassName} = createThemeContext();
 
 class Home extends React.Component {
     constructor() {
@@ -57,7 +62,11 @@ class Home extends React.Component {
                 }, () => {
                     newsItems.forEach((item) => {
                         hydrate(
-                            <NewsItem {...item.state}/>, document.getElementById(item.state.id).parentNode.parentNode)
+                            <StylesProvider generateClassName={generateClassName}>
+                                <ThemeProvider theme={theme}>
+                                    <NewsItem {...item.state}/>
+                                </ThemeProvider>
+                            </StylesProvider>, document.getElementById(item.state.id))
                     })
                 })
             });
@@ -96,7 +105,7 @@ class Home extends React.Component {
                             alignItems="center"
                         >
                             {news.map((i) => {
-                                return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
+                                return <div id={i.state.id} key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
                             })}
                         </Grid>
                     </InfiniteScroll>

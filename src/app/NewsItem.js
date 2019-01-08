@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {withStyles} from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/styles';
 import classnames from 'classnames';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -61,7 +61,7 @@ class NewsItem extends React.Component {
         const {handleExpandClick} = this;
         return (
             <Grid item xs={12} style={{marginTop:"20px"}}>
-                <Card className={classes.card} id={id} key={id}>
+                <Card className={classes.card}>
                     <CardHeader
                         avatar={
                             <Avatar aria-label="Recipe" className={classes.avatar}>
@@ -142,4 +142,4 @@ NewsItem.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(NewsItem);
+export default withStyles(styles, { name: 'NewsItem' })(NewsItem);

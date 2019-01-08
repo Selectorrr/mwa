@@ -8,11 +8,14 @@ import {hydrate} from 'react-dom'
 import Header from './Header'
 
 import PropTypes from 'prop-types';
-import {withStyles} from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
 import NewsItem from "./NewsItem";
 import InfiniteScroll from 'react-infinite-scroller';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import createThemeContext from "~/themeContext";
+import ThemeProvider from '@material-ui/styles/ThemeProvider'
+import StylesProvider from '@material-ui/styles/StylesProvider'
 
 const styles = theme => ({
     root: {
@@ -24,6 +27,7 @@ const styles = theme => ({
         color: theme.palette.text.secondary,
     }
 });
+const {theme, generateClassName} = createThemeContext();
 
 class Home extends React.Component {
     constructor() {
@@ -56,7 +60,12 @@ class Home extends React.Component {
                 }, () => {
                     newsItems.forEach((item) => {
                         hydrate(
-                            <NewsItem {...item.state}/>, document.getElementById(item.state.id).parentNode.parentNode)
+                            <StylesProvider generateClassName={generateClassName}>
+                                <ThemeProvider theme={theme}>
+                                    <NewsItem {...item.state}/>
+                                </ThemeProvider>
+                            </StylesProvider>, document.getElementById(item.state.id))
+
                     })
                 })
             });
@@ -87,9 +96,11 @@ class Home extends React.Component {
                             pageStart={0}
                             loadMore={this.loadNews}
                             hasMore={true}
-                            loader={<Grid key="news-progressbar" item xs={12} style={{marginTop:"20px"}}><LinearProgress /></Grid>}>
+                            loader={<Grid key="news-progressbar" item xs={12}
+                                          style={{marginTop: "20px"}}><LinearProgress/></Grid>}>
                             {news.map((i) => {
-                                return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
+                                return <div id={i.state.id} key={i.state.id}
+                                            dangerouslySetInnerHTML={{__html: i.markup}}/>
                             })}
                         </InfiniteScroll>
                     </Grid>
