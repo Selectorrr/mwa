@@ -30,14 +30,15 @@ const styles = theme => ({
 const {theme, generateClassName} = createThemeContext();
 
 class Home extends React.Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
         this.increase = this.increase.bind(this)
         this.decrease = this.decrease.bind(this)
         this.loadNews = this.loadNews.bind(this)
+
         this.state = {
-            news: []
-        }
+            news: props.news
+        };
     }
 
     // Функции вызывают dispatch на действия increase или decrease
@@ -71,10 +72,6 @@ class Home extends React.Component {
             });
     }
 
-    componentDidMount() {
-        this.loadNews()
-    }
-
     render() {
         const {news} = this.state;
         const {classes} = this.props;
@@ -99,8 +96,12 @@ class Home extends React.Component {
                             loader={<Grid key="news-progressbar" item xs={12}
                                           style={{marginTop: "20px"}}><LinearProgress/></Grid>}>
                             {news.map((i) => {
-                                return <div id={i.state.id} key={i.state.id}
-                                            dangerouslySetInnerHTML={{__html: i.markup}}/>
+                                if (i.markup) {
+                                    return <div id={i.state.id} key={i.state.id}
+                                                dangerouslySetInnerHTML={{__html: i.markup}}/>
+                                } else {
+                                    return <NewsItem id={i.state.id} key={i.state.id} {...i.state}/>
+                                }
                             })}
                         </InfiniteScroll>
                     </Grid>
@@ -112,7 +113,8 @@ class Home extends React.Component {
 
 // Добавляем в props счетчик
 const mapStateToProps = (state) => ({
-    count: state.count
+    count: state.count,
+    news: state.news
 })
 // Добавляем actions к this.props
 const mapDispatchToProps = (dispatch) => ({
