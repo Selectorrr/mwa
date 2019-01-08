@@ -10,12 +10,13 @@ import Header from './Header'
 import PropTypes from 'prop-types';
 import {withStyles} from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
-import NewsItem from "./NewsItem";
 import InfiniteScroll from 'react-infinite-scroller';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import createThemeContext from "~/themeContext";
 import ThemeProvider from '@material-ui/styles/ThemeProvider'
 import StylesProvider from '@material-ui/styles/StylesProvider'
+import ReactPaginate from 'react-paginate';
+import NewsItem from "./NewsItem";
 
 const styles = theme => ({
     root: {
@@ -34,10 +35,11 @@ class Home extends React.Component {
         super(props)
         this.increase = this.increase.bind(this)
         this.decrease = this.decrease.bind(this)
-        this.loadNews = this.loadNews.bind(this)
+        this.loadPage = this.loadPage.bind(this)
+        this.onPageChange = this.onPageChange.bind(this)
 
         this.state = {
-            news: props.news
+            page: props.page
         };
     }
 
@@ -50,22 +52,36 @@ class Home extends React.Component {
         this.props.actions.decrease()
     }
 
-    loadNews() {
-        fetch(`/news`)
+    static hrefBuilder(page) {
+        return `/?page=${page}`;
+    }
+
+    onPageChange(page) {
+        this.props.history.push(`/?page=${page.selected}`)
+    }
+
+    loadPage() {
+        fetch(`/news?page=${this.state.page.number + 1}`)
             .then((response) => {
                 return response.json()
             })
-            .then((newsItems) => {
+            .then((page) => {
                 this.setState((prevState) => {
-                    return {...prevState, news: [...prevState.news, ...newsItems]}
+                    return {
+                        ...prevState,
+                        page: {
+                            ...page,
+                            content: [...prevState.page.content, ...page.content]
+                        }
+                    }
                 }, () => {
-                    newsItems.forEach((item) => {
+                    page.content.forEach((item) => {
                         hydrate(
                             <StylesProvider generateClassName={generateClassName}>
                                 <ThemeProvider theme={theme}>
-                                    <NewsItem {...item.state}/>
+                                    <NewsItem {...item}/>
                                 </ThemeProvider>
-                            </StylesProvider>, document.getElementById(item.state.id))
+                            </StylesProvider>, document.getElementById(item.id))
 
                     })
                 })
@@ -73,7 +89,7 @@ class Home extends React.Component {
     }
 
     render() {
-        const {news} = this.state;
+        const {page} = this.state;
         const {classes} = this.props;
         return (
             <div>
@@ -91,19 +107,32 @@ class Home extends React.Component {
                     >
                         <InfiniteScroll
                             pageStart={0}
-                            loadMore={this.loadNews}
-                            hasMore={true}
+                            loadMore={this.loadPage}
+                            hasMore={page.hasNext}
                             loader={<Grid key="news-progressbar" item xs={12}
                                           style={{marginTop: "20px"}}><LinearProgress/></Grid>}>
-                            {news.map((i) => {
+                            {page.content.map((i) => {
                                 if (i.markup) {
-                                    return <div id={i.state.id} key={i.state.id}
+                                    return <div id={i.id} key={i.id}
                                                 dangerouslySetInnerHTML={{__html: i.markup}}/>
                                 } else {
-                                    return <NewsItem id={i.state.id} key={i.state.id} {...i.state}/>
+                                    return <NewsItem id={i.id} key={i.id} {...i}/>
                                 }
                             })}
                         </InfiniteScroll>
+                        <ReactPaginate previousLabel={"previous"}
+                                       nextLabel={"next"}
+                                       breakLabel={"..."}
+                                       breakClassName={"break-me"}
+                                       pageCount={page.totalPages}
+                                       marginPagesDisplayed={2}
+                                       pageRangeDisplayed={10}
+                                       onPageChange={this.onPageChange}
+                                       containerClassName={"pagination"}
+                                       subContainerClassName={"pages pagination"}
+                                       hrefBuilder={Home.hrefBuilder}
+                                       activeClassName={"active"}
+                                       forcePage={page.number - 1}/>
                     </Grid>
                 </div>
             </div>
@@ -114,7 +143,7 @@ class Home extends React.Component {
 // Добавляем в props счетчик
 const mapStateToProps = (state) => ({
     count: state.count,
-    news: state.news
+    page: state.page
 })
 // Добавляем actions к this.props
 const mapDispatchToProps = (dispatch) => ({

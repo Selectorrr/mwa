@@ -19,8 +19,9 @@ import ThemeProvider from '@material-ui/styles/ThemeProvider'
 import StylesProvider from '@material-ui/styles/StylesProvider'
 import createThemeContext from '~/themeContext'
 import {SheetsRegistry} from 'jss';
+import {generateNews} from '~/stub'
 
-function renderIndex(initialState, url, mobile) {
+export function renderIndex(initialState, url, mobile) {
     // Создаем стор
     let store = configureStore(initialState);
     const reactRouterContext = {};
@@ -31,7 +32,8 @@ function renderIndex(initialState, url, mobile) {
     let content = renderToString(
         <StaticRouter location={url} context={reactRouterContext}>
             <Provider store={store}>
-                <StylesProvider generateClassName={generateClassName} sheetsRegistry={sheetsRegistry}  sheetsManager={new Map()}>
+                <StylesProvider generateClassName={generateClassName} sheetsRegistry={sheetsRegistry}
+                                sheetsManager={new Map()}>
                     <ThemeProvider theme={theme}>
                         <Loadable.Capture report={moduleName => modules.push(moduleName)}>
                             {mobile === null ? <App/> : <MobileApp/>}
@@ -53,30 +55,22 @@ function renderIndex(initialState, url, mobile) {
     return template(helmet, content, sheetsRegistry, bundles, initialState)
 }
 
-function renderNews() {
+export function renderNews(page) {
     const {theme, generateClassName} = createThemeContext();
-    let states = [];
-    for (let i = 0; i < 20; i++) {
-        states.push({id: v4(), title: 'Title ' + v4()})
-    }
-    return states.map(state => {
-        return {
-            state: state,
-            markup: renderToString(
-                <StylesProvider generateClassName={generateClassName} sheetsManager={new Map()}>
-                    <ThemeProvider theme={theme}>
-                        <NewsItem {...state}/>
-                    </ThemeProvider>
-                </StylesProvider>
-            )
-        }
-    });
-}
 
-export default function render(url, initialState, mobile) {
-    if ("/" === url) {
-        return renderIndex(initialState, url, mobile);
-    } else if (url.toString().startsWith("/news")) {
-        return renderNews();
-    }
+    return {
+        ...page,
+        content: page.content.map(item => {
+            return {
+                ...item,
+                markup: renderToString(
+                    <StylesProvider generateClassName={generateClassName} sheetsManager={new Map()}>
+                        <ThemeProvider theme={theme}>
+                            <NewsItem {...item}/>
+                        </ThemeProvider>
+                    </StylesProvider>
+                )
+            }
+        })
+    };
 }
