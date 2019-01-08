@@ -32,13 +32,13 @@ const styles = {
 const {theme, generateClassName} = createThemeContext();
 
 class Home extends React.Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
         this.increase = this.increase.bind(this)
         this.decrease = this.decrease.bind(this)
         this.loadNews = this.loadNews.bind(this)
         this.state = {
-            news: []
+            news: props.news
         }
     }
 
@@ -105,7 +105,12 @@ class Home extends React.Component {
                             alignItems="center"
                         >
                             {news.map((i) => {
-                                return <div id={i.state.id} key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
+                                if (i.markup) {
+                                    return <div id={i.state.id} key={i.state.id}
+                                                dangerouslySetInnerHTML={{__html: i.markup}}/>
+                                } else {
+                                    return <NewsItem id={i.state.id} key={i.state.id} {...i.state}/>
+                                }
                             })}
                         </Grid>
                     </InfiniteScroll>
@@ -116,7 +121,8 @@ class Home extends React.Component {
 }
 
 const mapStateToProps = (state) => ({
-    count: state.count
+    count: state.count,
+    news: state.news
 })
 const mapDispatchToProps = (dispatch) => ({
     actions: bindActionCreators(Actions, dispatch)
