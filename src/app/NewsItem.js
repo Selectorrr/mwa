@@ -142,4 +142,4 @@ NewsItem.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(NewsItem);
+export default withStyles(styles, { name: 'NewsItem' })(NewsItem);

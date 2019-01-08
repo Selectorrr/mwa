@@ -116,4 +116,4 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(withStyles(styles)(Home))
+)(withStyles(styles, { name: 'MobileHome' })(Home))

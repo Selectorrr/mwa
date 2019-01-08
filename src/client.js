@@ -1,13 +1,13 @@
 import React from 'react'
 import {hydrate} from 'react-dom'
 import {BrowserRouter} from 'react-router-dom'
-import App from './app/App'
 import purple from '@material-ui/core/colors/purple'
 import {createGenerateClassName, createMuiTheme, MuiThemeProvider,} from '@material-ui/core/styles';
 import {JssProvider} from 'react-jss'
 import Loadable from 'react-loadable'
 import configureStore from './redux/configureStore'
 import {Provider} from 'react-redux'
+import App from "./app/App";
 import MobileApp from "./mobileApp/App";
 
 class Main extends React.Component {
@@ -20,10 +20,11 @@ class Main extends React.Component {
     }
 
     render() {
-        return <App/>
+        return (
+            state.mobile === null ? <App/> : <MobileApp/>
+        );
     }
 }
-
 
 
 // Тема на клиенте должна быть такой же, как и на сервере
@@ -41,7 +42,9 @@ const theme = createMuiTheme({
 })
 
 // Create a new class name generator.
-const generateClassName = createGenerateClassName();
+const generateClassName = createGenerateClassName({
+    dangerouslyUseGlobalCSS: false
+});
 
 // Буквально вытаскиваем initialState из "окна" и заново создаем стор
 const state = window.__STATE__
@@ -53,10 +56,10 @@ Loadable.preloadReady().then(() => {
     hydrate(
         <Provider store={store}>
             <BrowserRouter>
-        <JssProvider generateClassName={generateClassName}>
-            <MuiThemeProvider theme={theme}>
-                <Main/>
-                    {state.mobile === null ? </MuiThemeProvider> : <MobileApp/>}
+                <JssProvider generateClassName={generateClassName}>
+                    <MuiThemeProvider theme={theme}>
+                        <Main/>
+                    </MuiThemeProvider>
                 </JssProvider>
             </BrowserRouter>
         </Provider>,

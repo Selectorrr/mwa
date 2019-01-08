@@ -8,11 +8,11 @@ import {hydrate} from 'react-dom'
 import Header from './Header'
 
 import PropTypes from 'prop-types';
-import {withStyles} from '@material-ui/core/styles';
+import {createGenerateClassName, createMuiTheme, MuiThemeProvider, withStyles} from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import NewsItem from "./NewsItem";
-import InfiniteScroll from 'react-infinite-scroller';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import purple from '@material-ui/core/colors/purple'
+import {JssProvider, SheetsRegistry} from 'react-jss'
 
 const styles = theme => ({
     root: {
@@ -45,6 +45,31 @@ class Home extends React.Component {
         this.props.actions.decrease()
     }
 
+    static createNewsItemStyleContext() {
+        const generateClassName = createGenerateClassName({
+            dangerouslyUseGlobalCSS: false
+        });
+
+//Создаем объект sheetsRegistry - пока он пустой
+        const sheetsRegistry = new SheetsRegistry()
+        const sheetsManager = new Map()
+// Создаем тему - можно настроить на любой вкус и цвет
+        const theme = createMuiTheme({
+            palette: {
+                primary: purple,
+                secondary: {
+                    main: '#f44336',
+                },
+            },
+            // Это нужно только для версий 3.*.*. Когда будет v4 - удалить
+            typography: {
+                useNextVariants: true,
+            },
+        })
+        return {generateClassName, sheetsRegistry, sheetsManager, theme};
+    }
+
+
     loadNews() {
         fetch(`/news`)
             .then((response) => {
@@ -54,9 +79,15 @@ class Home extends React.Component {
                 this.setState((prevState) => {
                     return {...prevState, news: [...prevState.news, ...newsItems]}
                 }, () => {
+                    const {generateClassName, sheetsRegistry, sheetsManager, theme} = Home.createNewsItemStyleContext();
                     newsItems.forEach((item) => {
                         hydrate(
-                            <NewsItem {...item.state}/>, document.getElementById(item.state.id).parentNode.parentNode)
+                            <JssProvider registry={sheetsRegistry} generateClassName={generateClassName}>
+                                <MuiThemeProvider theme={theme} sheetsManager={sheetsManager}>
+                                    <NewsItem {...item.state}/>
+                                </MuiThemeProvider>
+                            </JssProvider>
+                            , document.getElementById(item.state.id).parentNode.parentNode)
                     })
                 })
             });
@@ -83,15 +114,10 @@ class Home extends React.Component {
                         justify="center"
                         alignItems="center"
                     >
-                        <InfiniteScroll
-                            pageStart={0}
-                            loadMore={this.loadNews}
-                            hasMore={true}
-                            loader={<Grid key="news-progressbar" item xs={12} style={{marginTop:"20px"}}><LinearProgress /></Grid>}>
-                            {news.map((i) => {
-                                return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
-                            })}
-                        </InfiniteScroll>
+                        {news.map((i) => {
+                            return <div key={i.state.id} dangerouslySetInnerHTML={{__html: i.markup}}/>
+                        })}
+
                     </Grid>
                 </div>
             </div>
@@ -116,4 +142,4 @@ Home.propTypes = {
 export default connect(
     mapStateToProps,
     mapDispatchToProps
-)(withStyles(styles)(Home))
+)(withStyles(styles, {name: 'MobileHome'})(Home))
