@@ -57,7 +57,7 @@ class Home extends React.Component {
     }
 
     onPageChange(page) {
-        this.props.history.push(`/?page=${page.selected}`)
+        this.props.history.push(`/?page=${page.selected + 1}`)
     }
 
     loadPage() {
@@ -120,10 +120,9 @@ class Home extends React.Component {
                                 }
                             })}
                         </InfiniteScroll>
-                        <ReactPaginate previousLabel={"previous"}
-                                       nextLabel={"next"}
-                                       breakLabel={"..."}
-                                       breakClassName={"break-me"}
+                        <ReactPaginate
+                                       previousLabel={"<-"}
+                                       nextLabel={"->"}
                                        pageCount={page.totalPages}
                                        marginPagesDisplayed={2}
                                        pageRangeDisplayed={10}

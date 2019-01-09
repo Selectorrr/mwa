@@ -1,6 +1,7 @@
 body {
     background-color: lightgray;
 }
+
 .pagination ul {
     display: inline-block;
     padding-left: 15px;
@@ -9,4 +10,28 @@ body {
 
 .pagination li {
     display: inline-block;
+}
+
+.pagination li a {
+    color: #03A9F4;
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    text-decoration: none;
+    margin-right: 1em;
+}
+
+.pagination li.active a {
+    color: purple;
+}
+
+.pagination li.disabled a {
+    color: gray;
+}
+
+.pagination li a:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: transparent;
 }
