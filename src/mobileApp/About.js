@@ -35,8 +35,7 @@ export default class About extends React.Component {
                          style={styles.img}/>
                     <br/>
                     <Typography variant="subtitle1">
-                        Learn more about it <a href="https://github.com/vanishmax/modern-web-app" target="_blank"> here
-                        - GitHub</a>
+                        About
                     </Typography>
                 </Paper>
             </div>

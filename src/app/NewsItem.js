@@ -78,7 +78,7 @@ class NewsItem extends React.Component {
                     />
                     <CardMedia
                         className={classes.media}
-                        image="http://via.placeholder.com/640x480.png"
+                        image=""
                         title={title}
                     />
                     <CardContent>
