@@ -1,0 +1,20 @@
+version: '3.3'
+services:
+      app:
+        container_name: app
+        image: 192.168.1.20:5000/app:latest
+        build:
+          context: ../
+          dockerfile: ./deploy/app/Dockerfile
+        ports:
+          - 3000:3000
+      nginx:
+        container_name: nginx
+        image: 192.168.1.20:5000/nginx:latest
+        build:
+          context: ../
+          dockerfile: ./deploy/nginx/Dockerfile
+        ports:
+          - 80:80
+        depends_on:
+          - app
