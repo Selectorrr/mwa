@@ -3,19 +3,21 @@ import {Helmet} from 'react-helmet'
 import {bindActionCreators} from 'redux'
 import {connect} from 'react-redux'
 import * as Actions from '&/redux/actions'
-
+import {hydrate} from 'react-dom'
 import Header from './Header'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import NewsItem from "../app/NewsItem";
-import {hydrate} from 'react-dom'
 import {withStyles} from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
 import InfiniteScroll from 'react-infinite-scroller';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import ThemeProvider from '@material-ui/styles/ThemeProvider'
 import StylesProvider from '@material-ui/styles/StylesProvider'
 import createThemeContext from "~/themeContext";
+import ReactPaginate from 'react-paginate';
+
 
 const styles = {
     paper: {
@@ -36,10 +38,12 @@ class Home extends React.Component {
         super(props)
         this.increase = this.increase.bind(this)
         this.decrease = this.decrease.bind(this)
-        this.loadNews = this.loadNews.bind(this)
+        this.loadPage = this.loadPage.bind(this)
+        this.onPageChange = this.onPageChange.bind(this)
+
         this.state = {
-            news: props.news
-        }
+            page: props.page
+        };
     }
 
     increase() {
@@ -50,30 +54,44 @@ class Home extends React.Component {
         this.props.actions.decrease()
     }
 
+    static hrefBuilder(page) {
+        return `/?page=${page}`;
+    }
 
-    loadNews() {
-        fetch(`/news`)
+    onPageChange(page) {
+        this.props.history.push(`/?page=${page.selected + 1}`)
+    }
+
+    loadPage() {
+        fetch(`/news?page=${this.state.page.number + 1}`)
             .then((response) => {
                 return response.json()
             })
-            .then((newsItems) => {
+            .then((page) => {
                 this.setState((prevState) => {
-                    return {...prevState, news: [...prevState.news, ...newsItems]}
+                    return {
+                        ...prevState,
+                        page: {
+                            ...page,
+                            content: [...prevState.page.content, ...page.content]
+                        }
+                    }
                 }, () => {
-                    newsItems.forEach((item) => {
+                    page.content.forEach((item) => {
                         hydrate(
                             <StylesProvider generateClassName={generateClassName}>
                                 <ThemeProvider theme={theme}>
-                                    <NewsItem {...item.state}/>
+                                    <NewsItem {...item}/>
                                 </ThemeProvider>
-                            </StylesProvider>, document.getElementById(item.state.id))
+                            </StylesProvider>, document.getElementById(item.id))
+
                     })
                 })
             });
     }
 
     render() {
-        const {news} = this.state;
+        const {page} = this.state;
         const {classes} = this.props;
         return (
             <div>
@@ -92,28 +110,40 @@ class Home extends React.Component {
                 </Paper>
 
                 <div className={classes.root} style={{marginTop: "20px"}}>
-                    <InfiniteScroll
-                        pageStart={0}
-                        loadMore={this.loadNews}
-                        hasMore={true}
-                        loader={<div className="loader" key={0}>Loading ...</div>}
+                    <Grid
+                        container
+                        direction="column"
+                        justify="center"
+                        alignItems="center"
                     >
-                        <Grid
-                            container
-                            direction="column"
-                            justify="center"
-                            alignItems="center"
-                        >
-                            {news.map((i) => {
+                        <InfiniteScroll
+                            pageStart={0}
+                            loadMore={this.loadPage}
+                            hasMore={page.hasNext}
+                            loader={<Grid key="news-progressbar" item xs={12}
+                                          style={{marginTop: "20px"}}><LinearProgress/></Grid>}>
+                            {page.content.map((i) => {
                                 if (i.markup) {
-                                    return <div id={i.state.id} key={i.state.id}
+                                    return <div id={i.id} key={i.id}
                                                 dangerouslySetInnerHTML={{__html: i.markup}}/>
                                 } else {
-                                    return <NewsItem id={i.state.id} key={i.state.id} {...i.state}/>
+                                    return <NewsItem id={i.id} key={i.id} {...i}/>
                                 }
                             })}
-                        </Grid>
-                    </InfiniteScroll>
+                        </InfiniteScroll>
+                        <ReactPaginate
+                            previousLabel={"<-"}
+                            nextLabel={"->"}
+                            pageCount={page.totalPages}
+                            marginPagesDisplayed={2}
+                            pageRangeDisplayed={10}
+                            onPageChange={this.onPageChange}
+                            containerClassName={"pagination"}
+                            subContainerClassName={"pages pagination"}
+                            hrefBuilder={Home.hrefBuilder}
+                            activeClassName={"active"}
+                            forcePage={page.number - 1}/>
+                    </Grid>
                 </div>
             </div>
         )
@@ -122,7 +152,7 @@ class Home extends React.Component {
 
 const mapStateToProps = (state) => ({
     count: state.count,
-    news: state.news
+    page: state.page
 })
 const mapDispatchToProps = (dispatch) => ({
     actions: bindActionCreators(Actions, dispatch)
